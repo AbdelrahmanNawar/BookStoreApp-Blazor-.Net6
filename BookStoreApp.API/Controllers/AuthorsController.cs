@@ -45,7 +45,7 @@ namespace BookStoreApp.API.Controllers
         {
             try
             {
-                var author = await _context.Authors.FindAsync(id);
+                var author = await _context.Authors.FirstOrDefaultAsync(q => q.Id == id);
 
                 if (author == null)
                 {
