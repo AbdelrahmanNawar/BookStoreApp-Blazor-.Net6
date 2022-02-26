@@ -54,7 +54,7 @@ namespace BookStoreApp.API.Controllers
                                                 .ProjectTo<BookReadOnlyDto>(_mapper.ConfigurationProvider)
                                                 .FirstOrDefaultAsync(b => b.Id == id);
 
-                if (bookDto == null)
+                if (bookDto is null)
                 {
                     _logger.LogWarning($"Record not found: {nameof(GetBookById)} - ID: {id}");
                     return NotFound();
@@ -83,7 +83,7 @@ namespace BookStoreApp.API.Controllers
 
                 var book = await _context.Books.FirstOrDefaultAsync(b => b.Id == id);
 
-                if (book == null)
+                if (book is null)
                 {
                     _logger.LogWarning($"Record not found: {nameof(UpdateBook)} - ID: {id}");
                     return NotFound();
@@ -138,7 +138,7 @@ namespace BookStoreApp.API.Controllers
             try
             {
                 var book = await _context.Books.FindAsync(id);
-                if (book == null)
+                if (book is null)
                 {
                     _logger.LogWarning($"Record not found: {nameof(DeleteBook)} - ID: {id}");
                     return NotFound();

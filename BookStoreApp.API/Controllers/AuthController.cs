@@ -116,6 +116,7 @@ namespace BookStoreApp.API.Controllers
                 new Claim(CustomClaimTypes.UserId, user.Id),
             }.Union(roleClaims)
             .Union(userClaims);
+
             var token = new JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],

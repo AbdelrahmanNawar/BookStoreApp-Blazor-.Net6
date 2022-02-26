@@ -49,7 +49,7 @@ namespace BookStoreApp.API.Controllers
             {
                 var author = await _context.Authors.FirstOrDefaultAsync(q => q.Id == id);
 
-                if (author == null)
+                if (author is null)
                 {
                     _logger.LogWarning($"Record not found: {nameof(GetAuthorById)} - ID: {id}");
                     return NotFound();
@@ -77,7 +77,7 @@ namespace BookStoreApp.API.Controllers
 
                 var author = await _context.Authors.FindAsync(id);
 
-                if (author == null)
+                if (author is null)
                 {
                     _logger.LogWarning($"Record not found: {nameof(UpdateAuthor)} - ID: {id}");
                     return NotFound();
@@ -133,7 +133,7 @@ namespace BookStoreApp.API.Controllers
             try
             {
                 var author = await _context.Authors.FindAsync(id);
-                if (author == null)
+                if (author is null)
                 {
                     _logger.LogWarning($"Record not found: {nameof(DeleteAuthor)} - ID: {id}");
                     return NotFound();
