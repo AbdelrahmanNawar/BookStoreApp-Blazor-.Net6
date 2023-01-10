@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using BookStoreApp.API.Constants;
 using BookStoreApp.API.Data;
 using BookStoreApp.API.Models.Author;
@@ -31,8 +32,13 @@ namespace BookStoreApp.API.Controllers
         {
             try
             {
-                var authors = await _context.Authors.ToListAsync();
-                return Ok(_mapper.Map<IEnumerable<AuthorReadOnlyDto>>(authors));
+                if (await _context.Authors.AnyAsync())
+                {
+
+                    var authors = await _context.Authors.ToListAsync();
+                    return Ok(_mapper.Map<IEnumerable<AuthorReadOnlyDto>>(authors));
+                }
+                return Ok(new List<AuthorReadOnlyDto>());
             }
             catch (Exception ex)
             {
@@ -43,18 +49,20 @@ namespace BookStoreApp.API.Controllers
 
         // GET: api/Authors/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<AuthorReadOnlyDto>> GetAuthorById(int id)
+        public async Task<ActionResult<AuthorDetailsDto>> GetAuthorById(int id)
         {
             try
             {
-                var author = await _context.Authors.FirstOrDefaultAsync(q => q.Id == id);
+                var author = await _context.Authors.Include(a => a.Books)
+                                                   .ProjectTo<AuthorDetailsDto>(_mapper.ConfigurationProvider)
+                                                   .FirstOrDefaultAsync(q => q.Id == id);
 
                 if (author is null)
                 {
                     _logger.LogWarning($"Record not found: {nameof(GetAuthorById)} - ID: {id}");
                     return NotFound();
                 }
-                return Ok(_mapper.Map<AuthorReadOnlyDto>(author));
+                return Ok(author);
             }
             catch (Exception ex)
             {

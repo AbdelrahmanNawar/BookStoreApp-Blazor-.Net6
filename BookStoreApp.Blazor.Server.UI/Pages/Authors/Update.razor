@@ -1,0 +1,63 @@
+﻿@page "/authors/update/{id:int}"
+@inject IAuthorService _authorService
+@inject NavigationManager _navManager
+@inject IMapper _mapper
+@attribute [Authorize(Roles = AuthenticationConstants.Admin)]
+
+<h3>Update Author</h3>
+
+<EditForm Model="Author" OnValidSubmit="HandleUpdateAuthor">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="form-group">
+        <label for="firstname"> First Name </label>
+        <InputText @bind-Value="Author.FirstName" class="form-control" id="firstname" />
+        <ValidationMessage For="@(()=>Author.FirstName)" />
+    </div>
+    <br />
+    <div class="form-group">
+        <label for="lastname"> Last Name </label>
+        <InputText @bind-Value="Author.LastName" class="form-control" id="lastname" />
+        <ValidationMessage For="@(()=>Author.LastName)" />
+    </div>
+    <br />
+    <div class="form-group">
+        <label for="bio"> Biography </label>
+        <InputText @bind-Value="Author.Bio" class="form-control" id="bio" />
+        <ValidationMessage For="@(()=>Author.Bio)" />
+    </div>
+    <br />
+    <div>
+        <button class="btn btn-primary" type="submit">
+            <span class="oi oi-pencil"></span>
+            Update Author
+        </button>
+        <button @onclick="BackToList" class="btn btn-outline-secondary">
+            <span class="oi oi-media-skip-backward"></span>
+            Back To List
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+    private AuthorUpdateDto Author = new AuthorUpdateDto();
+
+    protected async override Task OnInitializedAsync()
+    {
+        var response = await _authorService.GetAuthorByIdAsync(id);
+        if (response.Success)
+            Author = _mapper.Map<AuthorUpdateDto>(response.Data);
+    }
+
+    private async Task HandleUpdateAuthor()
+    {
+        var response = await _authorService.UpdateAuthorAsync(id, Author);
+        if (response.Success)
+            BackToList();
+    }
+
+    private void BackToList() => _navManager.NavigateTo("/authors/");
+
+}
