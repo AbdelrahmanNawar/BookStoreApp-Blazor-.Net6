@@ -4,7 +4,7 @@
 @inject IMapper _mapper
 @attribute [Authorize(Roles = AuthenticationConstants.Admin)]
 
-<h3>Update Author</h3>
+<h3> Update Author </h3>
 
 <EditForm Model="Author" OnValidSubmit="HandleUpdateAuthor">
     <DataAnnotationsValidator />
@@ -32,7 +32,7 @@
             <span class="oi oi-pencil"></span>
             Update Author
         </button>
-        <button @onclick="BackToList" class="btn btn-outline-secondary">
+        <button @onclick="BackToList" class="btn btn-outline-secondary" type="button">
             <span class="oi oi-media-skip-backward"></span>
             Back To List
         </button>

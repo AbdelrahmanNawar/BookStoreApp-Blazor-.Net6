@@ -18,12 +18,14 @@ namespace BookStoreApp.API.Controllers
         private readonly BookStoreDBContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger<BooksController> _logger;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public BooksController(BookStoreDBContext context, IMapper mapper, ILogger<BooksController> logger)
+        public BooksController(BookStoreDBContext context, IMapper mapper, ILogger<BooksController> logger, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _mapper = mapper;
             _logger = logger;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         // GET: api/Books
@@ -46,12 +48,12 @@ namespace BookStoreApp.API.Controllers
 
         // GET: api/Books/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<BookReadOnlyDto>> GetBookById(int id)
+        public async Task<ActionResult<BookDetailsDto>> GetBookById(int id)
         {
             try
             {
                 var bookDto = await _context.Books.Include(b => b.Author)
-                                                .ProjectTo<BookReadOnlyDto>(_mapper.ConfigurationProvider)
+                                                .ProjectTo<BookDetailsDto>(_mapper.ConfigurationProvider)
                                                 .FirstOrDefaultAsync(b => b.Id == id);
 
                 if (bookDto is null)
@@ -60,7 +62,7 @@ namespace BookStoreApp.API.Controllers
                     return NotFound();
                 }
 
-                return bookDto;
+                return Ok(bookDto);
             }
             catch (Exception ex)
             {
@@ -89,8 +91,10 @@ namespace BookStoreApp.API.Controllers
                     return NotFound();
                 }
 
+                var oldURL = book.ImageURL;
                 _mapper.Map(bookDto, book);
-                _context.Entry(bookDto).State = EntityState.Modified;
+                book.ImageURL = CreateFile(bookDto.ImageData, bookDto.OriginalImageName, oldURL);
+                _context.Entry(book).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
 
@@ -118,6 +122,7 @@ namespace BookStoreApp.API.Controllers
             try
             {
                 var book = _mapper.Map<Book>(bookDto);
+                book.ImageURL = CreateFile(bookDto.ImageData, bookDto.OriginalImageName);
                 await _context.Books.AddAsync(book);
                 await _context.SaveChangesAsync();
 
@@ -159,6 +164,24 @@ namespace BookStoreApp.API.Controllers
         private async Task<bool> BookExists(int id)
         {
             return await _context.Books.AnyAsync(e => e.Id == id);
+        }
+
+        private string CreateFile(string imageBase64, string imageName, string oldUrl = null)
+        {
+            var url = HttpContext.Request.Host.Value;
+            var ext = Path.GetExtension(imageName);
+            var fileName = $"{Guid.NewGuid()}{ext}";
+            var path = $"{_webHostEnvironment.WebRootPath}\\BookCoverimages\\{fileName}";
+            var newURL = $"https://{url}/BookCoverImages/{fileName}";
+
+            if (string.IsNullOrEmpty(oldUrl) || oldUrl != newURL)
+            {
+                byte[] image = Convert.FromBase64String(imageBase64);
+                var fileStream = System.IO.File.Create(path);
+                fileStream.Write(image, 0, image.Length);
+                fileStream.Close();
+            }
+            return newURL;
         }
     }
 }
