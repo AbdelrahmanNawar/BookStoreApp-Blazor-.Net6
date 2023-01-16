@@ -24,6 +24,7 @@ builder.Services.AddScoped<ApiAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(p =>
                p.GetRequiredService<ApiAuthenticationStateProvider>());
 builder.Services.AddAutoMapper(typeof(AuthorProfile));
+builder.Services.AddAutoMapper(typeof(BookProfile));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
